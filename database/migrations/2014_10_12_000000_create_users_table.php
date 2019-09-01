@@ -23,10 +23,10 @@ class CreateUsersTable extends Migration
             $table->string('last_name');
             $table->string('first_name');
             $table->string('gender');
-            $table->string('nationality');
-            $table->date('date_of_birth');
-            $table->string('phone_number');
-            $table->string('drivers_licence');
+            $table->string('nationality')->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('drivers_licence')->nullable();
 
             $table->rememberToken();
             $table->timestamps();
