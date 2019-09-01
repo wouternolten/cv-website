@@ -4,7 +4,7 @@
     <div class="col-md-6">
         <select name="{{ $name }}">
             <option value="">-- Please select one -- </option>
-            @foreach($options as $value => $label)
+            @foreach(config('forms.selects.'.$options) as $value => $label)
                 <option value="{{$value}}">{{ $label }}</option>
             @endforeach
         </select>

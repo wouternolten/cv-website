@@ -41,7 +41,7 @@
                             'required' => 'true'
                             ])
 
-                        @include('parts.forms.select', ['labelName' => 'Gender', 'name' => 'gender', 'options' => config('forms.gender')])
+                        @include('parts.forms.select', ['labelName' => 'Gender', 'name' => 'gender', 'options' => 'gender'])
 
                         <div class="form-group row">
                             <label for="nationality" class="col-md-4 col-form-label text-md-right">Nationality</label>
