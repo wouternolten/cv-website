@@ -2,9 +2,9 @@
     <label for="{{ $name }}" class="col-md-4 col-form-label text-md-right">{{ $labelName }}</label>
 
     <div class="col-md-6">
-        <select name="{{ $name }}">
+        <select class="browser-default custom-select" name="{{ $name }}">
             <option value="">-- Please select one -- </option>
-            @foreach(config('forms.selects.'.$options) as $value => $label)
+            @foreach($options as $value => $label)
                 <option value="{{$value}}">{{ $label }}</option>
             @endforeach
         </select>

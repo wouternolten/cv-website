@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class JobsController extends Controller
@@ -16,6 +17,21 @@ class JobsController extends Controller
         //
     }
 
+    private function getFormData($form)
+    {
+        $formData = $form;
+
+        foreach ($formData as $formKey => $input) {
+            foreach ($input as $key => $value) {
+                if ($key === 'options') {
+                    $formData[$formKey][$key] = config('forms.selects.' . $value);
+                }
+            }
+        }
+
+        return $formData;
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -23,7 +39,14 @@ class JobsController extends Controller
      */
     public function create()
     {
-        return view('jobs.create');
+        $companies = Company::all();
+        $formData = array_merge(
+            ['job_form' => $this->getFormData(config('forms.job'))],
+            ['company_form' => $this->getFormData(config('forms.company'))],
+            ['companies' => $companies->toArray()]
+        );
+
+        return view('jobs.create')->with('formData', $formData);
     }
 
     /**
@@ -34,7 +57,7 @@ class JobsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
     }
 
     /**
