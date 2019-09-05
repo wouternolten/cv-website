@@ -4,6 +4,9 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
+import Vue from 'vue';
+import store from './store/index';
+
 require('./bootstrap');
 
 window.Vue = require('vue');
@@ -33,4 +36,5 @@ Vue.component('vue-select-form', require('./components/forms/parts/SelectForm.vu
 
 const app = new Vue({
     el: '#app',
+    store
 });
