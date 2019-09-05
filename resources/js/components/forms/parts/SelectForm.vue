@@ -6,21 +6,24 @@
     >{{ formData.labelName }}</label>
 
     <div class="col-md-6">
-      <select class="browser-default custom-select" v-model="selected" :name="formData.name">
+      <select
+        class="browser-default custom-select"
+        v-model="fields[formData.name]"
+        :name="formData.name"
+      >
         <option value>-- Please select one --</option>
-        <option v-for="(option, index) in formData.options" :value="index">{{ option }}</option>
+        <option v-for="(option, index) in formData.options" :key="index" :value="index">{{ option }}</option>
       </select>
     </div>
+    <div v-if="hasError(formData.name)" class="text-danger">{{ getError(formData.name) }}</div>
   </div>
 </template>
 
 <script>
+import FormMixin from "../mixins/FormMixin";
+
 export default {
   props: ["formData"],
-  data() {
-    return {
-      selected: {}
-    };
-  }
+  mixins: [FormMixin]
 };
 </script>
