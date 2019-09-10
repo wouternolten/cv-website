@@ -1,5 +1,5 @@
 <template>
-  <form method="POST" enctype="multipart/form-data" @submit.prevent="submit">
+  <form method="POST" enctype="multipart/form-data" @submit.prevent="submitForm">
     <component
       v-for="formData in totalForm.job_form"
       :key="formData.index"
@@ -17,20 +17,23 @@
 </template>
 
 <script>
-import FormMixin from "./mixins/FormMixin";
-
+import { mapActions } from "vuex";
 export default {
   props: ["json_form"],
-  mixins: [FormMixin],
-  data() {
-    return {
-      action: "/jobs"
-    };
+  created() {
+    this.setActionUrl(`${window.location.origin}/jobs`);
   },
   computed: {
     totalForm() {
       return JSON.parse(this.json_form);
     }
+  },
+  methods: {
+    ...mapActions({
+      submitForm: "formStore/submitForm",
+      setActionUrl: "formStore/setActionUrl",
+      testSetErrors: "formStore/testSetErrors"
+    })
   }
 };
 </script>

@@ -1,3 +1,3 @@
 export interface IFormService {
-    submit(url: string, data: []);
+    submit(url: string, data: {});
 }

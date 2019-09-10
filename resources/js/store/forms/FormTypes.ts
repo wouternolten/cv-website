@@ -1,7 +1,7 @@
 import { IFormService } from "../../services/IFormService";
 
 export interface FormTypes {
-    fields: [],
+    fields: {},
     errors: {},
     success: boolean,
     loaded: boolean,

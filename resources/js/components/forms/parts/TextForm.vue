@@ -10,24 +10,38 @@
         :id="getId(formData.name)"
         type="text"
         class="form-control"
-        v-model="fields[formData.name]"
+        :value="fields[formData.name]"
         :name="formData.name"
         :required="formData.required"
+        @input="updateForm"
       />
     </div>
-    <div v-if="hasError(formData.name)" class="text-danger">{{ getError(formData.name) }}</div>
+    <div v-if="errors(formData.name)" class="text-danger">{{ errors(formData.name) }}</div>
   </div>
 </template>
 
 <script>
-import FormMixin from "../mixins/FormMixin";
+import { mapGetters, mapState } from "vuex";
 
 export default {
   props: ["formData"],
-  mixins: [FormMixin],
+  computed: {
+    ...mapGetters("formStore", {
+      errors: "error"
+    }),
+    ...mapState({
+      fields: state => state.formStore.fields
+    })
+  },
   methods: {
     getId(name) {
       return `form-field-${name}`;
+    },
+    updateForm(e) {
+      this.$store.commit("formStore/updateForm", {
+        name: this.formData.name,
+        value: e.target.value
+      });
     }
   }
 };
