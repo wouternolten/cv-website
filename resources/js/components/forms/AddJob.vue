@@ -6,6 +6,7 @@
       :is="`vue-${formData.type}-form`"
       :formData="formData"
     ></component>
+    <vue-tags-form :tags="totalForm.tags"></vue-tags-form>
     <vue-add-company :companies="totalForm.companies" :companyForm="totalForm.company_form"></vue-add-company>
     <div class="form-group row">
       <div class="col-md-4"></div>
@@ -15,6 +16,8 @@
     </div>
   </form>
 </template>
+
+// TODO: ADD TAGS
 
 <script>
 import { mapActions } from "vuex";

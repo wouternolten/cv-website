@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class JobsController extends Controller
@@ -40,10 +41,13 @@ class JobsController extends Controller
     public function create()
     {
         $companies = Company::all();
+        $tags = Tag::all();
+
         $formData = array_merge(
             ['job_form' => $this->getFormData(config('forms.job'))],
             ['company_form' => $this->getFormData(config('forms.company'))],
-            ['companies' => $companies->toArray()]
+            ['companies' => $companies->toArray()],
+            ['tags' => $tags->toArray()]
         );
 
         return view('jobs.create')->with('formData', $formData);
