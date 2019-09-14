@@ -6,6 +6,7 @@
 
 import Vue from 'vue';
 import store from './store/index';
+import VueTagsInput from "@johmun/vue-tags-input";
 
 require('./bootstrap');
 
@@ -24,9 +25,11 @@ window.Vue = require('vue');
 
 Vue.component('vue-add-company', require('./components/forms/AddCompany.vue').default);
 Vue.component('vue-add-job', require('./components/forms/AddJob.vue').default);
+
 Vue.component('vue-text-form', require('./components/forms/parts/TextForm.vue').default);
 Vue.component('vue-date-form', require('./components/forms/parts/DateForm.vue').default);
 Vue.component('vue-select-form', require('./components/forms/parts/SelectForm.vue').default);
+Vue.component('vue-tags-form', require('./components/forms/parts/TagsForm.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -36,5 +39,6 @@ Vue.component('vue-select-form', require('./components/forms/parts/SelectForm.vu
 
 const app = new Vue({
     el: '#app',
-    store
+    store,
+    components: { VueTagsInput }
 });
