@@ -36,6 +36,19 @@ const actions: ActionTree<FormTypes, RootState> = {
 
     setActionUrl({ commit }, actionUrl: string) {
         commit('setActionUrl', actionUrl);
+    },
+
+    updateForm({ state, commit }: { state: FormTypes, commit: any }, { name, value }: { name: string, value: (string | string[]) }) {
+        console.log('FormStore@updateForm', name, value);
+        if (Array.isArray(value)) {
+            if (!Array.isArray(state.fields[name])) {
+                commit('setArray', name);
+            }
+
+            value.forEach((val) => commit('addUnique', { name, value: val }));
+        } else {
+            commit('updateForm', { name, value })
+        }
     }
 };
 
@@ -60,8 +73,17 @@ const mutations: MutationTree<FormTypes> = {
         state.action = actionUrl;
     },
 
+    setArray(state: FormTypes, name: string) {
+        Vue.set(state.fields, name, []);
+    },
+
     updateForm(state: FormTypes, { name, value }) {
         Vue.set(state.fields, name, value);
+    },
+
+    addUnique(state: FormTypes, { name, value }: { name: string, value: string }) {
+        if (!state.fields[name].includes(value))
+            state.fields[name].push(value);
     }
 };
 

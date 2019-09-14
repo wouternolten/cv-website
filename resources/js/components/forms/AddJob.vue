@@ -14,13 +14,15 @@
         <button type="submit" class="btn btn-primary">Add job</button>
       </div>
     </div>
+    <div class="form-group row">
+      <div class="col-md-4"></div>
+      <div class="col-md-6">Form data: {{ fields }}</div>
+    </div>
   </form>
 </template>
 
-// TODO: ADD TAGS
-
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 export default {
   props: ["json_form"],
   created() {
@@ -29,13 +31,15 @@ export default {
   computed: {
     totalForm() {
       return JSON.parse(this.json_form);
-    }
+    },
+    ...mapState({
+      fields: state => state.formStore.fields
+    })
   },
   methods: {
     ...mapActions({
       submitForm: "formStore/submitForm",
-      setActionUrl: "formStore/setActionUrl",
-      testSetErrors: "formStore/testSetErrors"
+      setActionUrl: "formStore/setActionUrl"
     })
   }
 };
