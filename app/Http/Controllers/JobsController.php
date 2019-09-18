@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
@@ -61,7 +62,37 @@ class JobsController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        $v = Validator::make($request->all(), [
+            'job_type' => ['required', 'string'],
+            'function_name' => ['required', 'string', 'max:255'],
+            'start_date' => ['required', 'date'],
+            'responsibilities' => ['required'],
+            'company_id' => ['required'],
+            'tags' => ['sometimes', 'string', 'unique:name']
+        ]);
+
+        $v->sometimes('company_name', 'required|max:500', function ($input) {
+            return $input->company_id = 'new_company';
+        });
+
+        $v->sometimes('company_city', 'required|max:500', function ($input) {
+            return $input->company_id = 'new_company';
+        });
+
+        $v->sometimes('company_url', 'required|url', function ($input) {
+            return $input->company_id = 'new_company';
+        });
+
+        if (is_numeric($request->get('company_id'))) {
+            $company = Company::find($request->get('company_id'));
+        } else {
+            $company = app('App\Http\Controllers\CompaniesController')->createNewCompany($request->all());
+        }
+
+        $job = new Job();
+        $job->create($request->all());
+
+        return redirect('/jobs')->with('success', 'Job created');
     }
 
     /**

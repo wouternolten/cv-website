@@ -42,7 +42,7 @@ export default {
   computed: {
     companyFormNames() {
       return this.objectMap(this.companyForm, formField => ({
-        name: `company.${formField.name}`,
+        name: `company_${formField.name}`,
         labelName: formField.labelName,
         type: formField.type
       }));

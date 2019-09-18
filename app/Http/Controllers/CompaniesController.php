@@ -2,10 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class CompaniesController extends Controller
 {
+    public function createNewCompany(array $requestData)
+    {
+        if (is_numeric($requestData['company_id'])) {
+            return Company::find($requestData['company_id']);
+        }
+
+        if ($company = Company::where('name', $requestData['company_name'])->first()) {
+            return $company;
+        }
+
+        $company = new Company();
+        $company->name = $requestData['company_name'];
+        $company->city = $requestData['company_city'];
+        $company->url = $requestData['company_url'];
+        $company->save();
+
+        return $company;
+    }
+
     /**
      * Display a listing of the resource.
      *
