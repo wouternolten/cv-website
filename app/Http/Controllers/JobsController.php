@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Job;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
+    private $companiesController;
+    private $tagsController;
+
+    public function __construct(CompaniesController $companiesController)
+    {
+        $this->companiesController = $companiesController;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +25,16 @@ class JobsController extends Controller
      */
     public function index()
     {
-        //
+        if ($user = $this->checkUser()) {
+            $jobs = $user->jobs
+                ->orderBy('job_type_id', 'asc')
+                ->orderBy('end_date', 'asc')
+                ->orderBy('start_date', 'desc');
+
+            return view('jobs.index')->with('jobs', $jobs);
+        }
+
+        return redirect('login');
     }
 
     private function getFormData($form)
@@ -83,14 +101,17 @@ class JobsController extends Controller
             return $input->company_id = 'new_company';
         });
 
-        if (is_numeric($request->get('company_id'))) {
-            $company = Company::find($request->get('company_id'));
-        } else {
-            $company = app('App\Http\Controllers\CompaniesController')->createNewCompany($request->all());
-        }
+        $company = $this->companiesController->createNewCompany($request->all());
 
         $job = new Job();
-        $job->create($request->all());
+        $job->company()->associate($company);
+        $job->user()->associate(auth()->user());
+        $job->job_type = $request->get('job_type');
+        $job->function_name = $request->get('function_name');
+        $job->start_date = $request->get('start_date');
+        $job->end_date = $request->get('end_date');
+        $job->responsibilities = $request->get('responsibilities');
+        $job->save();
 
         return redirect('/jobs')->with('success', 'Job created');
     }
@@ -138,5 +159,10 @@ class JobsController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    private function checkUser()
+    {
+        return auth()->user();
     }
 }

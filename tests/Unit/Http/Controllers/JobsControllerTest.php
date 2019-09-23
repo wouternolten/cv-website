@@ -2,13 +2,17 @@
 
 namespace Tests\Unit;
 
+use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\JobsController;
+use App\Models\Company;
 use App\Models\Job;
+use App\Models\User;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Mockery;
 
 class JobsControllertest extends TestCase
 {
@@ -17,9 +21,13 @@ class JobsControllertest extends TestCase
 
     private $basicValidData;
     private $controller;
+    private $companiesController;
+    private $user;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->basicValidData = [
             "job_type" => "professional",
             "function_name" => "Test job",
@@ -28,27 +36,51 @@ class JobsControllertest extends TestCase
             "company_id" => "1"
         ];
 
-        $this->controller = new JobsController();
-
-        parent::setUp();
+        $this->companiesController = Mockery::mock(CompaniesController::class);
+        $this->controller = new JobsController($this->companiesController);
+        $this->user = factory(User::class)->create();
     }
 
-    public function testBasicIndexFunction()
+    public function testIndexFunctionValidUser()
     {
-        $response = $this->call('GET', '/jobs');
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->be($this->user);
+
+        $view = $this->controller->index();
+        $this->assertEquals('jobs.index', $view->getName());
     }
 
-    // TODO: FIX TESTS
-    // public function testBasicStoreFunction()
-    // {
-    //     $response = $this->call('POST', '/jobs', $this->basicValidData);
+    public function testIndexFunctionWithJobs()
+    {
+        $this->be($this->user);
+        $job = factory(Job::class)->create();
 
-    //     $this->assertEquals(302, $response->getStatusCode());
-    //     $job = Job::where('job_type', $this->basicValidData['job_type'])->first();
+        $job->user()->associate($this->user);
+        $job->save();
 
-    //     $this->assertNotNull($job);
+        $view = $this->controller->index();
+        $this->assertEquals($job->id, $view->getData()['jobs'][0]->id);
+    }
 
-    //     $this->assertEquals($this->basicValidData['company_id'], $job->company->id);
-    // }
+    public function testIndexFunctionInvalidUser()
+    {
+        $response = $this->controller->index();
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testBasicStoreFunction()
+    {
+        $this->be($this->user);
+        $company = factory(Company::class)->create();
+        $this->companiesController->shouldReceive('createNewCompany')->andReturn($company)->once();
+        $request = Request::create('/store', 'POST', $this->basicValidData);
+
+        $response = $this->controller->store($request);
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $job = Job::where('job_type', $this->basicValidData['job_type'])->first();
+
+        $this->assertNotNull($job);
+        $this->assertEquals($company->id, $job->company->id);
+        $this->assertEquals($this->user->id, $job->user_id);
+    }
 }
