@@ -39,6 +39,7 @@ const actions: ActionTree<FormTypes, RootState> = {
     },
 
     updateForm({ state, commit }: { state: FormTypes, commit: any }, { name, value }: { name: string, value: (string | string[]) }) {
+        console.log(name, value);
         if (Array.isArray(value)) {
             if (!Array.isArray(state.fields[name])) {
                 commit('setArray', name);

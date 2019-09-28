@@ -6,7 +6,7 @@
       :is="`vue-${formData.type}-form`"
       :formData="formData"
     ></component>
-    <vue-tags-form :tags="totalForm.tags"></vue-tags-form>
+    <vue-tags-form :filterTags="totalForm.tags"></vue-tags-form>
     <vue-add-company :companies="totalForm.companies" :companyForm="totalForm.company_form"></vue-add-company>
     <div class="form-group row">
       <div class="col-md-4"></div>

@@ -4,8 +4,8 @@
       <label for="tags" class="col-md-4 col-form-label text-md-right">Tags</label>
       <vue-tags-input
         v-model="tag"
-        :tags="getTags"
-        :autocomplete-items="filteredItems"
+        :tags="currentTags"
+        :autocompleteItems="filteredItems"
         @tags-changed="newTags => parseTags(newTags)"
       ></vue-tags-input>
     </div>
@@ -19,16 +19,14 @@ import { mapGetters, mapState, mapActions } from "vuex";
 export default {
   data() {
     return {
-      tag: ""
+      tag: "",
+      currentTags: []
     };
   },
   components: {
     VueTagsInput
   },
-  created() {
-    this.updateForm({ name: "tags", value: this.tags || [] });
-  },
-  props: ["tags"],
+  props: ["filterTags"],
   computed: {
     ...mapGetters("formStore", {
       errors: "error"
@@ -36,25 +34,17 @@ export default {
     ...mapState({
       fields: state => state.formStore.fields
     }),
-    getTags() {
-      return this.fields["tags"].map(tag => ({
-        text: tag
-      }));
-    },
     filteredItems() {
-      return this.tags.filter(i => {
-        return (
-          i.toLowerCase().indexOf(this.fields["tags"].toLowerCase()) !== -1
-        );
-      });
+      return this.filterTags
+        .filter(tag => tag.toLowerCase().indexOf(this.tag.toLowerCase()) !== -1)
+        .map(tag => ({ text: tag }));
     }
   },
   methods: {
     parseTags(newTags) {
-      const tagsText = newTags.map(tag => tag.text);
       this.updateForm({
         name: "tags",
-        value: tagsText
+        value: newTags.map(tag => tag.text)
       });
     },
     ...mapActions({

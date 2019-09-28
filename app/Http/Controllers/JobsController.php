@@ -13,9 +13,10 @@ class JobsController extends Controller
     private $companiesController;
     private $tagsController;
 
-    public function __construct(CompaniesController $companiesController)
+    public function __construct(CompaniesController $companiesController, TagsController $tagsController)
     {
         $this->companiesController = $companiesController;
+        $this->tagsController = $tagsController;
     }
 
     /**
@@ -26,10 +27,11 @@ class JobsController extends Controller
     public function index()
     {
         if ($user = $this->checkUser()) {
-            $jobs = $user->jobs
-                ->orderBy('job_type_id', 'asc')
-                ->orderBy('end_date', 'asc')
-                ->orderBy('start_date', 'desc');
+            $jobs = $user->jobs()
+                ->orderBy('job_type', 'asc')
+                ->orderBy('end_date', 'desc')
+                ->orderBy('start_date', 'desc')
+                ->get();
 
             return view('jobs.index')->with('jobs', $jobs);
         }
@@ -60,13 +62,13 @@ class JobsController extends Controller
     public function create()
     {
         $companies = Company::all();
-        $tags = Tag::all();
+        $tags = Tag::all()->pluck('name', 'id');
 
         $formData = array_merge(
             ['job_form' => $this->getFormData(config('forms.job'))],
             ['company_form' => $this->getFormData(config('forms.company'))],
-            ['companies' => $companies->toArray()],
-            ['tags' => $tags->toArray()]
+            ['companies' => array_values($companies->toArray())],
+            ['tags' => array_values($tags->toArray())]
         );
 
         return view('jobs.create')->with('formData', $formData);
@@ -80,28 +82,20 @@ class JobsController extends Controller
      */
     public function store(Request $request)
     {
-        $v = Validator::make($request->all(), [
-            'job_type' => ['required', 'string'],
+        Validator::make($request->all(), [
+            'job_type' => ['required', 'digits_between:1,4'],
             'function_name' => ['required', 'string', 'max:255'],
             'start_date' => ['required', 'date'],
             'responsibilities' => ['required'],
             'company_id' => ['required'],
+            'company_name' => ['required_if:company_id,==,new_company'],
+            'company_city' => ['required_if:company_id,==,new_company'],
+            'company_url' => ['required_if:company_id,==,new_company'],
             'tags' => ['sometimes', 'string', 'unique:name']
         ]);
 
-        $v->sometimes('company_name', 'required|max:500', function ($input) {
-            return $input->company_id = 'new_company';
-        });
-
-        $v->sometimes('company_city', 'required|max:500', function ($input) {
-            return $input->company_id = 'new_company';
-        });
-
-        $v->sometimes('company_url', 'required|url', function ($input) {
-            return $input->company_id = 'new_company';
-        });
-
         $company = $this->companiesController->createNewCompany($request->all());
+        $tagIds = $this->tagsController->createTags($request->get('tags'))->pluck('id');
 
         $job = new Job();
         $job->company()->associate($company);
@@ -111,6 +105,9 @@ class JobsController extends Controller
         $job->start_date = $request->get('start_date');
         $job->end_date = $request->get('end_date');
         $job->responsibilities = $request->get('responsibilities');
+        $job->save();
+
+        $job->tags()->sync($tagIds);
         $job->save();
 
         return redirect('/jobs')->with('success', 'Job created');

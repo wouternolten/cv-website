@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'professional' => 'Professional',
-    'internship' => 'Internship',
-    'voluntary' => 'Voluntary',
-    'hobby' => 'Hobby'
+    '1' => 'Professional',
+    '2' => 'Internship',
+    '3' => 'Voluntary',
+    '4' => 'Hobby'
 ];
