@@ -10,9 +10,10 @@
 @import '~bootstrap/scss/bootstrap';
 
 // Globals
-@import 'global/base';
-@import 'global/titles';
-@import 'global/variables';
+@import 'global/globals';
+
+// Features
+@import 'features/features';
 
 
 
