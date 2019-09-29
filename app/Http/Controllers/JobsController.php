@@ -39,21 +39,6 @@ class JobsController extends Controller
         return redirect('login');
     }
 
-    private function getFormData($form)
-    {
-        $formData = $form;
-
-        foreach ($formData as $formKey => $input) {
-            foreach ($input as $key => $value) {
-                if ($key === 'options') {
-                    $formData[$formKey][$key] = config('forms.selects.' . $value);
-                }
-            }
-        }
-
-        return $formData;
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -120,9 +105,7 @@ class JobsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        //
-    }
+    { }
 
     /**
      * Show the form for editing the specified resource.
@@ -132,7 +115,18 @@ class JobsController extends Controller
      */
     public function edit($id)
     {
-        //
+        $job = Job::find($id);
+
+        if (!$job) {
+            return redirect('/jobs');
+        }
+
+        // Check for correct user
+        if (auth()->user() === null || (int) auth()->user()->id !== (int) $job->user_id) {
+            return redirect('/jobs')->with('error', 'Unauthorized page.');
+        }
+
+        return view('jobs.edit')->with('job', $job);
     }
 
     /**
@@ -156,6 +150,22 @@ class JobsController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+
+    private function getFormData($form)
+    {
+        $formData = $form;
+
+        foreach ($formData as $formKey => $input) {
+            foreach ($input as $key => $value) {
+                if ($key === 'options') {
+                    $formData[$formKey][$key] = config('forms.selects.' . $value);
+                }
+            }
+        }
+
+        return $formData;
     }
 
     private function checkUser()
