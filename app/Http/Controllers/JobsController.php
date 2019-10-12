@@ -144,7 +144,22 @@ class JobsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $job = Job::find($id);
+
+        if (!$job) {
+            return redirect('/jobs');
+        }
+
+        // Check for correct user
+        if (auth()->user() === null || (int) auth()->user()->id !== (int) $job->user_id) {
+            return redirect('login')->with('error', 'Please log in.');
+        }
+
+        if ($job->delete()) {
+            return redirect('/jobs')->with('success', 'Job removed');
+        } else {
+            return redirect('/jobs')->with('error', 'Job can\'t be removed');
+        }
     }
 
     private function doValidation(Request $request)

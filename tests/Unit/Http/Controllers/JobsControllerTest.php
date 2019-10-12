@@ -313,4 +313,44 @@ class JobsControllertest extends TestCase
         $this->assertEquals($this->user->id, $job->user_id);
         $this->assertEquals(0, count($job->tags));
     }
+
+
+    public function testDestroyWrongJobId()
+    {
+        $job = factory(Job::class)->create();
+        $response = $this->controller->destroy($job->id + 1);
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testDestroyNoUser()
+    {
+        $job = factory(Job::class)->create();
+        $response = $this->controller->destroy($job->id);
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testDestroyInvalidUserCombo()
+    {
+        $this->be($this->user);
+        $job = factory(Job::class)->create();
+
+        $job->user_id += $this->user->id + 1;
+        $job->save();
+
+        $response = $this->controller->destroy($job->id);
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testDestroyValidUserJobCombo()
+    {
+        $this->be($this->user);
+        $job = factory(Job::class)->create();
+        $job->user_id += $this->user->id;
+        $job->save();
+
+        $response = $this->controller->destroy($job->id);
+        $this->assertEquals(302, $response->getStatusCode());
+        // TODO: END THIS TEST
+        // $this->assertEquals('Job removed', $response->get)
+    }
 }
