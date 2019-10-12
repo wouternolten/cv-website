@@ -4,13 +4,13 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-import Vue from 'vue';
-import store from './store/index';
+import Vue from "vue";
+import store from "./store/index";
 import VueTagsInput from "@johmun/vue-tags-input";
 
-require('./bootstrap');
+require("./bootstrap");
 
-window.Vue = require('vue');
+window.Vue = require("vue");
 
 /**
  * The following block of code may be used to automatically register your
@@ -23,13 +23,35 @@ window.Vue = require('vue');
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
-Vue.component('vue-add-company', require('./components/forms/AddCompany.vue').default);
-Vue.component('vue-add-job', require('./components/forms/AddJob.vue').default);
+Vue.component(
+    "vue-add-company",
+    require("./components/forms/AddCompany.vue").default
+);
 
-Vue.component('vue-text-form', require('./components/forms/parts/TextForm.vue').default);
-Vue.component('vue-date-form', require('./components/forms/parts/DateForm.vue').default);
-Vue.component('vue-select-form', require('./components/forms/parts/SelectForm.vue').default);
-Vue.component('vue-tags-form', require('./components/forms/parts/TagsForm.vue').default);
+Vue.component(
+    "vue-job-form",
+    require("./components/forms/JobForm.vue").default
+);
+
+Vue.component(
+    "vue-text-form",
+    require("./components/forms/parts/TextForm.vue").default
+);
+
+Vue.component(
+    "vue-date-form",
+    require("./components/forms/parts/DateForm.vue").default
+);
+
+Vue.component(
+    "vue-select-form",
+    require("./components/forms/parts/SelectForm.vue").default
+);
+
+Vue.component(
+    "vue-tags-form",
+    require("./components/forms/parts/TagsForm.vue").default
+);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -38,7 +60,7 @@ Vue.component('vue-tags-form', require('./components/forms/parts/TagsForm.vue').
  */
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     store,
     components: { VueTagsInput }
 });

@@ -1,17 +1,16 @@
-import { FormTypes } from "./FormTypes";
-import { Module, ActionTree, MutationTree } from "vuex";
+import Vue from "vue";
+import { ActionTree, Module, MutationTree } from "vuex";
+
+import { FormField, JobForm } from "../../interfaces/JobForm";
 import { RootState } from "../types";
-import JobService from "../../services/JobService";
-import Vue from 'vue';
+import { FormTypes } from "./FormTypes";
 
 // initial state
 const state: FormTypes = {
     fields: {},
     errors: [],
     success: false,
-    loaded: true,
-    action: '',
-    formService: new JobService()
+    loaded: true
 };
 
 // getters
@@ -21,34 +20,40 @@ const getters = {
 
 // actions
 const actions: ActionTree<FormTypes, RootState> = {
-    submitForm({ state, commit }) {
-        commit('resetForm');
-
-        state.formService.submit(
-            state.action,
-            state.fields
-        ).then(response => {
-            commit('setForm', response);
-        }, (errors) => {
-            commit('setErrors', errors);
-        });
-    },
-
-    setActionUrl({ commit }, actionUrl: string) {
-        commit('setActionUrl', actionUrl);
-    },
-
-    updateForm({ state, commit }: { state: FormTypes, commit: any }, { name, value }: { name: string, value: (string | string[]) }) {
-        console.log(name, value);
+    updateForm(
+        { state, commit }: { state: FormTypes; commit: any },
+        { name, value }: { name: string; value: string | string[] }
+    ) {
         if (Array.isArray(value)) {
             if (!Array.isArray(state.fields[name])) {
-                commit('setArray', name);
+                commit("setArray", name);
             }
 
-            value.forEach((val) => commit('addUnique', { name, value: val }));
+            value.forEach(val => commit("addUnique", { name, value: val }));
         } else {
-            commit('updateForm', { name, value })
+            commit("updateForm", { name, value });
         }
+    },
+
+    setValues({ dispatch }, form: JobForm) {
+        form.job_form.forEach((formField: FormField) => {
+            dispatch("updateForm", {
+                name: formField.name,
+                value: formField.value
+            });
+        });
+
+        dispatch("updateForm", {
+            name: "tags",
+            value: form.tags || []
+        });
+
+        form.company_form.forEach((formField: FormField) => {
+            dispatch("updateForm", {
+                name: `company_${formField.name}`,
+                value: formField.value
+            });
+        });
     }
 };
 
@@ -69,10 +74,6 @@ const mutations: MutationTree<FormTypes> = {
         state.loaded = true;
     },
 
-    setActionUrl(state: FormTypes, actionUrl: string) {
-        state.action = actionUrl;
-    },
-
     setArray(state: FormTypes, name: string) {
         Vue.set(state.fields, name, []);
     },
@@ -81,9 +82,11 @@ const mutations: MutationTree<FormTypes> = {
         Vue.set(state.fields, name, value);
     },
 
-    addUnique(state: FormTypes, { name, value }: { name: string, value: string }) {
-        if (!state.fields[name].includes(value))
-            state.fields[name].push(value);
+    addUnique(
+        state: FormTypes,
+        { name, value }: { name: string; value: string }
+    ) {
+        if (!state.fields[name].includes(value)) state.fields[name].push(value);
     }
 };
 

@@ -26,29 +26,29 @@ class CompaniesControllerTest extends TestCase
      *
      * @return void
      */
-    public function testCreateNewCompanyWithCompanyId()
+    public function testgetCompanyFromRequestWithCompanyId()
     {
         $company = factory(Company::class)->create();
 
         $requestData = ['company_id' => $company->id];
 
-        $response = $this->controller->createNewCompany($requestData);
+        $response = $this->controller->getCompanyFromRequest($requestData);
 
         $this->assertEquals($response->id, $company->id);
     }
 
-    public function testCreateNewCompanyWithCompanyName()
+    public function testgetCompanyFromRequestWithCompanyName()
     {
         $company = factory(Company::class)->create();
 
         $requestData = ['company_id' => 'new_company', 'company_name' => $company->name];
 
-        $response = $this->controller->createNewCompany($requestData);
+        $response = $this->controller->getCompanyFromRequest($requestData);
 
         $this->assertEquals($response->id, $company->id);
     }
 
-    public function testCreateNewCompanyWithNewData()
+    public function testgetCompanyFromRequestWithNewData()
     {
         $name = $this->faker->company;
         $city = $this->faker->city;
@@ -61,7 +61,7 @@ class CompaniesControllerTest extends TestCase
             'company_url' => $url
         ];
 
-        $response = $this->controller->createNewCompany($requestData);
+        $response = $this->controller->getCompanyFromRequest($requestData);
 
         $company = factory(Company::class)->make([
             'name' => $name,
@@ -73,7 +73,7 @@ class CompaniesControllerTest extends TestCase
         $this->assertNotNull($response->id);
     }
 
-    public function testCreateNewCompanyUniqueConstraint()
+    public function testgetCompanyFromRequestUniqueConstraint()
     {
         $name = $this->faker->company;
         $city = $this->faker->city;
@@ -88,7 +88,7 @@ class CompaniesControllerTest extends TestCase
 
         $this->expectException(QueryException::class);
 
-        $this->controller->createNewCompany($requestData);
+        $this->controller->getCompanyFromRequest($requestData);
 
         factory(Company::class)->create([
             'name' => $name,

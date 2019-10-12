@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class CompaniesController extends Controller
 {
-    public function createNewCompany(array $requestData)
+    public function getCompanyFromRequest(array $requestData)
     {
         if (is_numeric($requestData['company_id'])) {
             return Company::find($requestData['company_id']);

@@ -23,6 +23,13 @@ export default {
       currentTags: []
     };
   },
+  created() {
+    this.fields.tags.forEach(tag => {
+      this.currentTags.push({
+        text: tag
+      });
+    });
+  },
   components: {
     VueTagsInput
   },

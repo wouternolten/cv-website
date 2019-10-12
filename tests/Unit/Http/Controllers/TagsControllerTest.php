@@ -4,12 +4,17 @@ namespace Tests\Unit;
 
 use App\Http\Controllers\TagsController;
 use App\Models\Tag;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TagsControllerTest extends TestCase
 {
+
+    use SoftDeletes;
+    use RefreshDatabase;
+
     private $tagsController;
 
     protected function setUp(): void

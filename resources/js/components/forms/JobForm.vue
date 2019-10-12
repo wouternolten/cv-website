@@ -1,17 +1,19 @@
 <template>
-  <form method="POST" enctype="multipart/form-data" @submit.prevent="submitForm">
+  <form enctype="multipart/form-data" :method="formMethod" :action="action">
+    <input v-if="realMethod !== 'POST'" type="hidden" name="_method" :value="realMethod" />
+    <input type="hidden" name="_token" :value="csrf" />
     <component
       v-for="formData in totalForm.job_form"
       :key="formData.index"
       :is="`vue-${formData.type}-form`"
       :formData="formData"
     ></component>
-    <vue-tags-form :filterTags="totalForm.tags"></vue-tags-form>
+    <vue-tags-form :filterTags="totalForm.all_tags"></vue-tags-form>
     <vue-add-company :companies="totalForm.companies" :companyForm="totalForm.company_form"></vue-add-company>
     <div class="form-group row">
       <div class="col-md-4"></div>
       <div class="col-md-6">
-        <button type="submit" class="btn btn-primary">Add job</button>
+        <button type="submit" class="btn btn-primary">{{ button_text }}</button>
       </div>
     </div>
     <div class="form-group row">
@@ -24,9 +26,9 @@
 <script>
 import { mapActions, mapState } from "vuex";
 export default {
-  props: ["json_form"],
+  props: ["json_form", "action", "button_text", "method", "csrf"],
   created() {
-    this.setActionUrl(`${window.location.origin}/jobs`);
+    this.setValues(this.totalForm);
   },
   computed: {
     totalForm() {
@@ -34,12 +36,17 @@ export default {
     },
     ...mapState({
       fields: state => state.formStore.fields
-    })
+    }),
+    formMethod() {
+      return this.method === "GET" ? "GET" : "POST";
+    },
+    realMethod() {
+      return this.method;
+    }
   },
   methods: {
     ...mapActions({
-      submitForm: "formStore/submitForm",
-      setActionUrl: "formStore/setActionUrl"
+      setValues: "formStore/setValues"
     })
   }
 };

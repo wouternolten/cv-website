@@ -13,10 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Mockery;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class JobsControllertest extends TestCase
 {
@@ -143,16 +142,17 @@ class JobsControllertest extends TestCase
     {
         $this->be($this->user);
         $company = factory(Company::class)->create();
-        $tag = factory(Tag::class)->create();
+        $tags = factory(Tag::class, 2)->create();
 
-        $this->companiesController->shouldReceive('createNewCompany')->andReturn($company)->once();
-        $this->tagsController->shouldReceive('createTags')->andReturn($tag)->once();
+        $this->basicValidData['company_id'] = $company->id;
+        $this->basicValidData['tags'] = $tags->pluck('name')->toArray();
 
-        $request = Request::create('/store', 'POST', $this->basicValidData);
+        $this->companiesController->shouldReceive('getCompanyFromRequest')->andReturn($company)->once();
+        $this->tagsController->shouldReceive('createTags')->andReturn($tags)->once();
+
+        $request = Request::create('/jobs', 'POST', $this->basicValidData);
 
         $response = $this->controller->store($request);
-
-        dd('tag');
 
         $this->assertEquals(302, $response->getStatusCode());
         $job = Job::where('job_type', $this->basicValidData['job_type'])->first();
@@ -160,17 +160,52 @@ class JobsControllertest extends TestCase
         $this->assertNotNull($job);
         $this->assertEquals($company->id, $job->company->id);
         $this->assertEquals($this->user->id, $job->user_id);
+        $this->assertEquals(2, count($job->tags));
     }
 
-    // public function testStoreFunctionInvalidRequirements()
-    // {
-    //     // TODO: implement function
-    // }
+    public function testStoreFunctionInvalidRequirements()
+    {
+        $invalidData = $this->basicValidData;
+        $invalidData['job_type'] = null;
 
-    // public function testStoreFunctionNewInvalidCompany()
-    // {
-    //     // TODO: implement function
-    // }
+        $this->expectException(ValidationException::class);
+
+        $request = Request::create('/jobs', 'POST', $invalidData);
+        $this->controller->store($request);
+    }
+
+    public function testStoreFunctionNewInvalidCompany()
+    {
+        $invalidData = $this->basicValidData;
+        $invalidData['company_id'] = 'new_company';
+
+        $this->expectException(ValidationException::class);
+
+        $request = Request::create('/jobs', 'POST', $invalidData);
+        $this->controller->store($request);
+    }
+
+    public function testStoreFunctionWithoutTags()
+    {
+        $this->be($this->user);
+        $company = factory(Company::class)->create();
+
+        $this->basicValidData['company_id'] = $company->id;
+
+        $this->companiesController->shouldReceive('getCompanyFromRequest')->andReturn($company)->once();
+
+        $request = Request::create('/jobs', 'POST', $this->basicValidData);
+
+        $response = $this->controller->store($request);
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $job = Job::where('job_type', $this->basicValidData['job_type'])->first();
+
+        $this->assertNotNull($job);
+        $this->assertEquals($company->id, $job->company->id);
+        $this->assertEquals($this->user->id, $job->user_id);
+        $this->assertEquals(0, count($job->tags));
+    }
 
     public function testJobFunctionInvalidJob()
     {
@@ -190,6 +225,7 @@ class JobsControllertest extends TestCase
         $this->be($this->user);
         $job = factory(Job::class)->create();
         $job->user_id += 1;
+        $job->save();
         $response = $this->controller->edit($job->id);
         $this->assertEquals(302, $response->getStatusCode());
     }
@@ -203,5 +239,78 @@ class JobsControllertest extends TestCase
 
         $this->assertEquals(View::class, get_class($response));
         $this->assertTrue(strpos($response->getPath(), 'jobs/edit') !== false);
+    }
+
+    public function testUpdateValidJob()
+    {
+        $this->be($this->user);
+        $job = factory(Job::class)->create();
+        $job->user_id = (int) $this->user->id;
+        $data = [
+            "job_type" => $job->job_type,
+            "function_name" => $job->function_name . '1',
+            "start_date" => $job->start_date,
+            "responsibilities" => $job->responsibilities,
+            "company_id" => $job->company->id,
+            "tags" => $job->tags->pluck('name')->toArray()
+        ];
+
+        $this->companiesController->shouldReceive('getCompanyFromRequest')->andReturn($job->company)->once();
+
+        $request = Request::create('/jobs', 'PUT', $data);
+        $response = $this->controller->update($request, $job->id);
+
+        $newJob = Job::find($job->id);
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertNotNull($job);
+        $this->assertNotEquals($newJob->function_name, $job->function_name);
+        $this->assertEquals($data['function_name'], $newJob->function_name);
+    }
+
+    public function testUpdateInvalidRequirements()
+    {
+        $job = factory(Job::class)->create();
+        $invalidData = $this->basicValidData;
+        $invalidData['job_type'] = null;
+
+        $this->expectException(ValidationException::class);
+
+        $request = Request::create('/jobs', 'POST', $invalidData);
+        $this->controller->update($request, $job->id);
+    }
+
+    public function testUpdateNewInvalidCompany()
+    {
+        $job = factory(Job::class)->create();
+        $invalidData = $this->basicValidData;
+        $invalidData['company_id'] = 'new_company';
+
+        $this->expectException(ValidationException::class);
+
+        $request = Request::create('/jobs', 'POST', $invalidData);
+        $this->controller->update($request, $job->id);
+    }
+
+    public function testUpdateWithoutTags()
+    {
+        $this->be($this->user);
+        $company = factory(Company::class)->create();
+        $old_job = factory(Job::class)->create();
+
+        $this->basicValidData['company_id'] = $company->id;
+
+        $this->companiesController->shouldReceive('getCompanyFromRequest')->andReturn($company)->once();
+
+        $request = Request::create('/jobs', 'POST', $this->basicValidData);
+
+        $response = $this->controller->store($request, $old_job->id);
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $job = Job::where('job_type', $this->basicValidData['job_type'])->first();
+
+        $this->assertNotNull($job);
+        $this->assertEquals($company->id, $job->company->id);
+        $this->assertEquals($this->user->id, $job->user_id);
+        $this->assertEquals(0, count($job->tags));
     }
 }
