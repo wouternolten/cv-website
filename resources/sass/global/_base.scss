@@ -1,0 +1,28 @@
+/* -------------------------
+    Links
+------------------------- */
+a {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+/* -------------------------
+    List Items
+------------------------- */
+ul {
+    list-style-type: none;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+/* -------------------------
+    Headers
+------------------------- */
+h1 {
+    margin: 1rem 0;
+}
